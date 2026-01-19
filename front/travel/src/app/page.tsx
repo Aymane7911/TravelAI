@@ -70,6 +70,7 @@ const travelPersonalities = [
 ];
 
 export default function Home() {
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Answer[]>([]);
@@ -89,14 +90,14 @@ export default function Home() {
   }, []);
 
   const fetchQuestions = async () => {
-    try {
-      const res = await fetch("http://localhost:8080/api/questions");
-      const data = await res.json();
-      setQuestions(data);
-    } catch (err) {
-      setError("Failed to load questions");
-    }
-  };
+  try {
+    const res = await fetch(`${API_URL}/api/questions`); // Changed
+    const data = await res.json();
+    setQuestions(data);
+  } catch (err) {
+    setError("Failed to load questions");
+  }
+};
 
   const nextWelcomeMessage = () => {
     if (welcomeStep < welcomeMessages.length - 1) {
@@ -152,11 +153,11 @@ export default function Home() {
     setError("");
 
     try {
-      const res = await fetch("http://localhost:8080/api/recommend", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ answers: finalAnswers }),
-      });
+      const res = await fetch(`${API_URL}/api/recommend`, { // Changed
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ answers: finalAnswers }),
+});
 
       if (!res.ok) {
         throw new Error("Failed to get recommendation");
