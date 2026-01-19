@@ -83,7 +83,7 @@ type GroqResponse struct {
 }
 
 func enableCORS(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -254,7 +254,7 @@ func callGroqAPI(prompt string) (*TravelRecommendation, error) {
 	}
 
 	reqBody := GroqRequest{
-		Model:       "llama-3.3-70b-versatile", // Free and powerful model
+		Model:       "llama-3.3-70b-versatile",
 		Temperature: 0.7,
 		MaxTokens:   2048,
 		Messages: []GroqMessage{
@@ -305,10 +305,8 @@ func callGroqAPI(prompt string) (*TravelRecommendation, error) {
 
 	content := groqResp.Choices[0].Message.Content
 
-	// Clean up the response if it has markdown code blocks
 	content = cleanJSONResponse(content)
 
-	// Parse the JSON response
 	var recommendation TravelRecommendation
 	if err := json.Unmarshal([]byte(content), &recommendation); err != nil {
 		return nil, fmt.Errorf("error parsing recommendation: %v. Content: %s", err, content)
@@ -318,7 +316,6 @@ func callGroqAPI(prompt string) (*TravelRecommendation, error) {
 }
 
 func cleanJSONResponse(content string) string {
-	// Remove markdown code blocks if present
 	if len(content) > 7 && content[:7] == "```json" {
 		content = content[7:]
 	}
@@ -332,14 +329,15 @@ func cleanJSONResponse(content string) string {
 }
 
 func main() {
-	// Load .env file
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using environment variables")
 	}
+
+	// Get PORT from environment variable (Render provides this)
 	port := os.Getenv("PORT")
-    if port == "" {
-        port = "8080" // fallback for local dev
-    }
+	if port == "" {
+		port = "8080" // fallback for local dev
+	}
 
 	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		enableCORS(w)
@@ -349,6 +347,7 @@ func main() {
 	http.HandleFunc("/api/questions", getQuestionsHandler)
 	http.HandleFunc("/api/recommend", getRecommendationHandler)
 
-	log.Println("Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// Use the port variable in ListenAndServe
+	log.Printf("Server starting on port %s", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
