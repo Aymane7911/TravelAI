@@ -336,6 +336,10 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using environment variables")
 	}
+	port := os.Getenv("PORT")
+    if port == "" {
+        port = "8080" // fallback for local dev
+    }
 
 	http.HandleFunc("/api/health", func(w http.ResponseWriter, r *http.Request) {
 		enableCORS(w)
